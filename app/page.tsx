@@ -1,41 +1,30 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { Play, Code, Trash2 } from "lucide-react"
-import PseudocodeEditor from "./components/PseudocodeEditor"
-import SyntaxFeedback from "./components/SyntaxFeedback"
-import { checkSyntax } from "./utils/syntaxChecker"
-import { SyntaxCheckResult } from "./types"
+import React, { useState } from "react";
+import { Play, Code, Trash2 } from "lucide-react";
+import PseudocodeEditor from "./components/PseudocodeEditor";
+import SyntaxFeedback from "./components/SyntaxFeedback";
+import { checkSyntax } from "./utils/syntaxChecker";
+import { SyntaxCheckResult } from "./types";
 
 export default function Home() {
   const [code, setCode] = useState(
     '// Cambridge Pseudocode IDE (9618 - 2026 Standards)\n// Write your pseudocode here using UPPERCASE keywords\n// Remember: Use ← for assignment, = only for CONSTANT\n\nPROCEDURE Example()\n   DECLARE message: STRING\n   DECLARE count: INTEGER\n   \n   message ← "Hello, Cambridge!"\n   count ← 5\n   \n   OUTPUT "Message: ", message\n   OUTPUT "Count: ", count\nENDPROCEDURE'
-  )
+  );
   const [syntaxResult, setSyntaxResult] = useState<SyntaxCheckResult | null>(
     null
-  )
-  const [insertAtCursor, setInsertAtCursor] = useState<((text: string) => void) | null>(null)
-
+  );
   const handleCheckSyntax = () => {
-    const result = checkSyntax(code)
-    setSyntaxResult(result)
-  }
+    const result = checkSyntax(code);
+    setSyntaxResult(result);
+  };
 
   const handleClearCode = () => {
     setCode(
       "// Write your pseudocode here\n// Use UPPERCASE for all keywords\n\n"
-    )
-    setSyntaxResult(null)
-  }
-
-  const insertSymbol = (symbol: string) => {
-    if (insertAtCursor) {
-      insertAtCursor(symbol)
-    } else {
-      // Fallback to appending at end if cursor function not available
-      setCode((prevCode) => prevCode + symbol)
-    }
-  }
+    );
+    setSyntaxResult(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -77,42 +66,21 @@ export default function Home() {
 
       {/* Symbol Helper Bar */}
       <div className="bg-white border-b border-gray-200 px-3 sm:px-6 py-3">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
-              Quick Insert:
-            </span>
-            <button
-              onClick={() => insertSymbol("←")}
-              className="px-2 sm:px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-mono text-xs sm:text-sm transition-colors"
-              title="Assignment operator (left arrow)"
-            >
-              ← Assignment
-            </button>
-            <button
-              onClick={() => insertSymbol("≠")}
-              className="px-2 sm:px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-mono text-xs sm:text-sm transition-colors"
-              title="Not equal operator"
-            >
-              ≠ Not Equal
-            </button>
-            <button
-              onClick={() => insertSymbol("≤")}
-              className="px-2 sm:px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-mono text-xs sm:text-sm transition-colors"
-              title="Less than or equal"
-            >
-              ≤ Less/Equal
-            </button>
-            <button
-              onClick={() => insertSymbol("≥")}
-              className="px-2 sm:px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-mono text-xs sm:text-sm transition-colors"
-              title="Greater than or equal"
-            >
-              ≥ Greater/Equal
-            </button>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-center">
+          <div className="text-sm text-gray-600 text-center">
+            <span className="font-medium">Tip:</span> Type{" "}
+            <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">
+              &lt;--
+            </code>{" "}
+            to automatically convert to{" "}
+            <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">←</code>{" "}
+            (assignment operator)
           </div>
-          <div className="text-xs text-gray-500 text-center sm:text-right">
-            Auto-replace: &lt;-- → ←, != → ≠, &lt;= → ≤, &gt;= → ≥
+          <div className="text-xs text-gray-500 text-center">
+            Cambridge operators:{" "}
+            <code className="bg-gray-100 px-1 py-0.5 rounded">
+              &gt;= &lt;= &lt;&gt; = &gt; &lt;
+            </code>
           </div>
         </div>
       </div>
@@ -122,11 +90,7 @@ export default function Home() {
         {/* Editor */}
         <div className="flex-1 p-3 sm:p-6 min-w-0 h-2/3 lg:h-auto">
           <div className="h-full">
-            <PseudocodeEditor 
-              value={code} 
-              onChange={setCode}
-              onEditorReady={setInsertAtCursor}
-            />
+            <PseudocodeEditor value={code} onChange={setCode} />
           </div>
         </div>
 
@@ -172,25 +136,6 @@ export default function Home() {
                   <li>• Use ≠ for "not equal", ≤≥ for comparisons</li>
                 </ul>
               </div>
-
-              <div className="mt-4 pt-3 border-t border-gray-200">
-                <h4 className="font-medium text-gray-800 text-sm mb-2">
-                  Symbol Helper:
-                </h4>
-                <p className="text-xs text-gray-600 mb-2">
-                  Use the Quick Insert buttons at the top or type shortcuts that
-                  auto-replace
-                </p>
-                <div className="text-xs text-gray-500">
-                  <div className="font-medium mb-1">Auto-replacements:</div>
-                  <div className="font-mono space-y-0.5">
-                    <div>&lt;-- → ←</div>
-                    <div>!= → ≠</div>
-                    <div>&lt;= → ≤</div>
-                    <div>&gt;= → ≥</div>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -234,5 +179,5 @@ export default function Home() {
         </div>
       </div>
     </div>
-  )
+  );
 }
