@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import React, { useEffect, useRef } from "react"
-import Editor from "@monaco-editor/react"
-import * as monaco from "monaco-editor"
+import React, { useEffect, useRef } from "react";
+import Editor from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
 
 interface PseudocodeEditorProps {
-  value: string
-  onChange: (value: string) => void
-  readOnly?: boolean
-  onEditorReady?: (insertAtCursor: (text: string) => void) => void
+  value: string;
+  onChange: (value: string) => void;
+  readOnly?: boolean;
+  onEditorReady?: (insertAtCursor: (text: string) => void) => void;
 }
 
 export default function PseudocodeEditor({
@@ -17,34 +17,106 @@ export default function PseudocodeEditor({
   readOnly = false,
   onEditorReady,
 }: PseudocodeEditorProps) {
-  const editorRef = useRef<any>(null)
+  const editorRef = useRef<any>(null);
 
   const handleEditorDidMount = (editor: any, monaco: any) => {
-    editorRef.current = editor
+    editorRef.current = editor;
 
     // Function to insert text at cursor position
     const insertAtCursor = (text: string) => {
       if (editor) {
-        const position = editor.getPosition()
+        const position = editor.getPosition();
         const range = new monaco.Range(
           position.lineNumber,
           position.column,
           position.lineNumber,
           position.column
-        )
+        );
         const operation = {
           range: range,
           text: text,
           forceMoveMarkers: true,
-        }
-        editor.executeEdits("insert-symbol", [operation])
-        editor.focus()
+        };
+        editor.executeEdits("insert-symbol", [operation]);
+        editor.focus();
       }
-    }
+    };
+
+    // Handle auto-replacement of shortcuts while preserving cursor position
+    let isReplacing = false;
+
+    editor.onDidChangeModelContent((e: any) => {
+      if (isReplacing) return; // Prevent infinite loops
+
+      const model = editor.getModel();
+      if (!model) return;
+
+      // Check if we have a simple text insertion (typing)
+      const isSimpleInsertion =
+        e.changes.length === 1 &&
+        e.changes[0].rangeLength === 0 &&
+        e.changes[0].text.length === 1;
+
+      if (!isSimpleInsertion) return;
+
+      const replacements = [
+        { pattern: "<--", replacement: "←" },
+        { pattern: "!=", replacement: "≠" },
+        { pattern: "<=", replacement: "≤" },
+        { pattern: ">=", replacement: "≥" },
+      ];
+
+      // Use requestAnimationFrame for better timing
+      requestAnimationFrame(() => {
+        const position = editor.getPosition();
+        if (!position) return;
+
+        const currentLine = model.getLineContent(position.lineNumber);
+
+        // Check each replacement pattern
+        for (const { pattern, replacement } of replacements) {
+          // Look for the pattern ending at the cursor position
+          const beforeCursor = currentLine.substring(0, position.column - 1);
+
+          if (beforeCursor.endsWith(pattern)) {
+            isReplacing = true;
+
+            // Calculate the range to replace
+            const startColumn = position.column - pattern.length;
+            const endColumn = position.column;
+
+            const replaceRange = new monaco.Range(
+              position.lineNumber,
+              startColumn,
+              position.lineNumber,
+              endColumn
+            );
+
+            editor.executeEdits("auto-replace", [
+              {
+                range: replaceRange,
+                text: replacement,
+                forceMoveMarkers: false,
+              },
+            ]);
+
+            // Set cursor position after the replacement
+            const newPosition = new monaco.Position(
+              position.lineNumber,
+              startColumn + replacement.length
+            );
+            editor.setPosition(newPosition);
+
+            isReplacing = false;
+            break; // Only replace the first match
+          }
+        }
+      });
+    });
 
     // Call the callback with the insertAtCursor function
     if (onEditorReady) {
-      onEditorReady(insertAtCursor)
+      onEditorReady(insertAtCursor);
     }
 
     // Register the custom pseudocode language
@@ -53,7 +125,7 @@ export default function PseudocodeEditor({
         .getLanguages()
         .some((lang: any) => lang.id === "pseudocode")
     ) {
-      monaco.languages.register({ id: "pseudocode" })
+      monaco.languages.register({ id: "pseudocode" });
 
       // Define syntax highlighting rules
       monaco.languages.setMonarchTokensProvider("pseudocode", {
@@ -197,7 +269,7 @@ export default function PseudocodeEditor({
             [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }],
           ],
         },
-      })
+      });
 
       // Define the theme
       monaco.editor.defineTheme("pseudocode-theme", {
@@ -232,12 +304,12 @@ export default function PseudocodeEditor({
           "editor.selectionBackground": "#add6ff",
           "editor.inactiveSelectionBackground": "#e5ebf1",
         },
-      })
+      });
 
       // Set the theme
-      monaco.editor.setTheme("pseudocode-theme")
+      monaco.editor.setTheme("pseudocode-theme");
     }
-  }
+  };
 
   return (
     <div className="h-full border border-gray-300 rounded-lg overflow-hidden">
@@ -248,15 +320,9 @@ export default function PseudocodeEditor({
         value={value}
         onChange={(newValue) => {
           if (newValue) {
-            // Auto-replace common shortcuts with Cambridge symbols
-            let processedValue = newValue
-              .replace(/<--/g, "←")
-              .replace(/!=/g, "≠")
-              .replace(/<=/g, "≤")
-              .replace(/>=/g, "≥")
-            onChange(processedValue)
+            onChange(newValue);
           } else {
-            onChange("")
+            onChange("");
           }
         }}
         onMount={handleEditorDidMount}
@@ -288,5 +354,5 @@ export default function PseudocodeEditor({
         }}
       />
     </div>
-  )
+  );
 }
