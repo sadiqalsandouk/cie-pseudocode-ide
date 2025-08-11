@@ -14,6 +14,7 @@ export default function Home() {
   const [syntaxResult, setSyntaxResult] = useState<SyntaxCheckResult | null>(
     null
   )
+  const [insertAtCursor, setInsertAtCursor] = useState<((text: string) => void) | null>(null)
 
   const handleCheckSyntax = () => {
     const result = checkSyntax(code)
@@ -28,7 +29,12 @@ export default function Home() {
   }
 
   const insertSymbol = (symbol: string) => {
-    setCode((prevCode) => prevCode + symbol)
+    if (insertAtCursor) {
+      insertAtCursor(symbol)
+    } else {
+      // Fallback to appending at end if cursor function not available
+      setCode((prevCode) => prevCode + symbol)
+    }
   }
 
   return (
@@ -116,7 +122,11 @@ export default function Home() {
         {/* Editor */}
         <div className="flex-1 p-3 sm:p-6 min-w-0 h-2/3 lg:h-auto">
           <div className="h-full">
-            <PseudocodeEditor value={code} onChange={setCode} />
+            <PseudocodeEditor 
+              value={code} 
+              onChange={setCode}
+              onEditorReady={setInsertAtCursor}
+            />
           </div>
         </div>
 

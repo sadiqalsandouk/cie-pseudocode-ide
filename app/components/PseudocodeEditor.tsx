@@ -8,17 +8,44 @@ interface PseudocodeEditorProps {
   value: string
   onChange: (value: string) => void
   readOnly?: boolean
+  onEditorReady?: (insertAtCursor: (text: string) => void) => void
 }
 
 export default function PseudocodeEditor({
   value,
   onChange,
   readOnly = false,
+  onEditorReady,
 }: PseudocodeEditorProps) {
   const editorRef = useRef<any>(null)
 
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor
+
+    // Function to insert text at cursor position
+    const insertAtCursor = (text: string) => {
+      if (editor) {
+        const position = editor.getPosition()
+        const range = new monaco.Range(
+          position.lineNumber,
+          position.column,
+          position.lineNumber,
+          position.column
+        )
+        const operation = {
+          range: range,
+          text: text,
+          forceMoveMarkers: true,
+        }
+        editor.executeEdits("insert-symbol", [operation])
+        editor.focus()
+      }
+    }
+
+    // Call the callback with the insertAtCursor function
+    if (onEditorReady) {
+      onEditorReady(insertAtCursor)
+    }
 
     // Register the custom pseudocode language
     if (
