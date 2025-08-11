@@ -1,103 +1,228 @@
-import Image from "next/image";
+"use client"
+
+import React, { useState } from "react"
+import { Play, Code, Trash2 } from "lucide-react"
+import PseudocodeEditor from "./components/PseudocodeEditor"
+import SyntaxFeedback from "./components/SyntaxFeedback"
+import { checkSyntax } from "./utils/syntaxChecker"
+import { SyntaxCheckResult } from "./types"
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [code, setCode] = useState(
+    '// Cambridge Pseudocode IDE (9618 - 2026 Standards)\n// Write your pseudocode here using UPPERCASE keywords\n// Remember: Use ← for assignment, = only for CONSTANT\n\nPROCEDURE Example()\n   DECLARE message: STRING\n   DECLARE count: INTEGER\n   \n   message ← "Hello, Cambridge!"\n   count ← 5\n   \n   OUTPUT "Message: ", message\n   OUTPUT "Count: ", count\nENDPROCEDURE'
+  )
+  const [syntaxResult, setSyntaxResult] = useState<SyntaxCheckResult | null>(
+    null
+  )
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleCheckSyntax = () => {
+    const result = checkSyntax(code)
+    setSyntaxResult(result)
+  }
+
+  const handleClearCode = () => {
+    setCode(
+      "// Write your pseudocode here\n// Use UPPERCASE for all keywords\n\n"
+    )
+    setSyntaxResult(null)
+  }
+
+  const insertSymbol = (symbol: string) => {
+    setCode((prevCode) => prevCode + symbol)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-3 sm:px-6 py-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between">
+          <div className="flex items-center gap-3">
+            <Code className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600" />
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Cambridge Pseudocode IDE
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600">
+                Practice AS & A Level Computer Science (9618) Pseudocode
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={handleCheckSyntax}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+            >
+              <Play className="w-4 h-4" />
+              <span className="hidden sm:inline">Check Syntax</span>
+              <span className="sm:hidden">Check</span>
+            </button>
+            <button
+              onClick={handleClearCode}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Clear</span>
+            </button>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </header>
+
+      {/* Symbol Helper Bar */}
+      <div className="bg-white border-b border-gray-200 px-3 sm:px-6 py-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              Quick Insert:
+            </span>
+            <button
+              onClick={() => insertSymbol("←")}
+              className="px-2 sm:px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-mono text-xs sm:text-sm transition-colors"
+              title="Assignment operator (left arrow)"
+            >
+              ← Assignment
+            </button>
+            <button
+              onClick={() => insertSymbol("≠")}
+              className="px-2 sm:px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-mono text-xs sm:text-sm transition-colors"
+              title="Not equal operator"
+            >
+              ≠ Not Equal
+            </button>
+            <button
+              onClick={() => insertSymbol("≤")}
+              className="px-2 sm:px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-mono text-xs sm:text-sm transition-colors"
+              title="Less than or equal"
+            >
+              ≤ Less/Equal
+            </button>
+            <button
+              onClick={() => insertSymbol("≥")}
+              className="px-2 sm:px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded font-mono text-xs sm:text-sm transition-colors"
+              title="Greater than or equal"
+            >
+              ≥ Greater/Equal
+            </button>
+          </div>
+          <div className="text-xs text-gray-500 text-center sm:text-right">
+            Auto-replace: &lt;-- → ←, != → ≠, &lt;= → ≤, &gt;= → ≥
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+        {/* Editor */}
+        <div className="flex-1 p-3 sm:p-6 min-w-0 h-2/3 lg:h-auto">
+          <div className="h-full">
+            <PseudocodeEditor value={code} onChange={setCode} />
+          </div>
+        </div>
+
+        {/* Right Sidebar - Syntax Feedback */}
+        <div className="w-full lg:w-80 xl:w-96 2xl:w-[28rem] bg-white border-t lg:border-t-0 lg:border-l border-gray-200 p-3 sm:p-6 overflow-y-auto flex-shrink-0 h-1/3 lg:h-auto">
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              Syntax Checker
+            </h2>
+            <p className="text-sm text-gray-600">
+              Check your pseudocode against Cambridge standards
+            </p>
+          </div>
+
+          {syntaxResult ? (
+            <SyntaxFeedback
+              result={syntaxResult}
+              answerResult={null}
+              onShowAnswer={() => {}}
+              showAnswer={false}
+              modelAnswer=""
+              showModelAnswerButton={false}
+            />
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <p className="text-sm text-gray-600">
+                Click "Check Syntax" to validate your pseudocode against
+                Cambridge International standards.
+              </p>
+
+              <div className="mt-4 space-y-2">
+                <h4 className="font-medium text-gray-800 text-sm">
+                  Cambridge 9618 Rules:
+                </h4>
+                <ul className="text-xs text-gray-600 space-y-1">
+                  <li>• Keywords must be UPPERCASE</li>
+                  <li>• Use ← for assignment, = only for CONSTANT</li>
+                  <li>• Indent exactly 3 spaces per level</li>
+                  <li>• Identifiers: mixed case, start with letter</li>
+                  <li>• Arrays: ARRAY[1:size] OF type</li>
+                  <li>• Comments start with //</li>
+                  <li>• String concatenation uses &</li>
+                  <li>• Use ≠ for "not equal", ≤≥ for comparisons</li>
+                </ul>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <h4 className="font-medium text-gray-800 text-sm mb-2">
+                  Symbol Helper:
+                </h4>
+                <p className="text-xs text-gray-600 mb-2">
+                  Use the Quick Insert buttons at the top or type shortcuts that
+                  auto-replace
+                </p>
+                <div className="text-xs text-gray-500">
+                  <div className="font-medium mb-1">Auto-replacements:</div>
+                  <div className="font-mono space-y-0.5">
+                    <div>&lt;-- → ←</div>
+                    <div>!= → ≠</div>
+                    <div>&lt;= → ≤</div>
+                    <div>&gt;= → ≥</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cambridge 9618 Keywords Reference */}
+          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-800 text-sm mb-2">
+              Cambridge 9618 Keywords
+            </h4>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <div className="font-mono text-blue-700">DECLARE</div>
+                <div className="font-mono text-blue-700">CONSTANT</div>
+                <div className="font-mono text-blue-700">TYPE/ENDTYPE</div>
+                <div className="font-mono text-blue-700">IF/ENDIF</div>
+                <div className="font-mono text-blue-700">CASE/ENDCASE</div>
+                <div className="font-mono text-blue-700">FOR/NEXT</div>
+                <div className="font-mono text-blue-700">WHILE/ENDWHILE</div>
+                <div className="font-mono text-blue-700">REPEAT/UNTIL</div>
+              </div>
+              <div>
+                <div className="font-mono text-blue-700">PROCEDURE</div>
+                <div className="font-mono text-blue-700">FUNCTION</div>
+                <div className="font-mono text-blue-700">INPUT/OUTPUT</div>
+                <div className="font-mono text-blue-700">BYVAL/BYREF</div>
+                <div className="font-mono text-blue-700">AND/OR/NOT</div>
+                <div className="font-mono text-blue-700">MOD/DIV</div>
+                <div className="font-mono text-blue-700">LENGTH/MID</div>
+                <div className="font-mono text-blue-700">LCASE/UCASE</div>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-blue-200">
+              <h5 className="font-medium text-blue-800 text-xs mb-1">
+                Data Types:
+              </h5>
+              <div className="text-xs text-blue-700 font-mono">
+                INTEGER, REAL, STRING, BOOLEAN, CHAR, DATE, ARRAY
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
