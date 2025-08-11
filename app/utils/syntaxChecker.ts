@@ -30,7 +30,7 @@ const KEYWORDS = [
 ];
 
 // Block keywords that require matching pairs
-const BLOCK_KEYWORDS = {
+const BLOCK_KEYWORDS: Record<string, string> = {
   'IF': 'ENDIF',
   'FOR': 'NEXT',
   'WHILE': 'ENDWHILE',
